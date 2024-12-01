@@ -1,7 +1,7 @@
-## Firebase Messaging Demo
+## Firebase Messaging
 
 ### Setup
-1. Clone this repository
+1. Clone this repository: https://github.com/youssefbakry22/Cloud-Computing.git
 2. Open the project in Flutter.
 3. Add your `google-services.json` to the `android/app` directory.
 4. Run `flutter pub get` to install dependencies.
