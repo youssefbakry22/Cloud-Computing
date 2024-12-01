@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "95368502662",
+    "project_id": "fcai-b049a",
+    "storage_bucket": "fcai-b049a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95368502662:android:7f8dbe8a7e35b863422007",
+        "android_client_info": {
+          "package_name": "com.example.fcai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv_DXotqwqtS9O8642cJEjoRmIFoHiM6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
