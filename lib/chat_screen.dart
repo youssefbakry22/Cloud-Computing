@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -14,7 +15,16 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final DatabaseReference _chatRef = FirebaseDatabase.instance.ref();
+  late String _userName;
   List<Map<String, dynamic>> _messages = [];
+  final ScrollController _scrollController = ScrollController(); // Add ScrollController
+
+  void _initializeUserName() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userName = user.displayName ?? 'Anonymous'; // Use displayName or a fallback
+    }
+  }
 
   @override
   void initState() {
@@ -27,8 +37,27 @@ class _ChatScreenState extends State<ChatScreen> {
               .map((entry) => Map<String, dynamic>.from(entry.value))
               .toList();
         });
+        // Scroll to the bottom after new messages are added
+        _scrollToBottom();
       }
     });
+    _initializeUserName();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // Dispose the controller when the screen is disposed
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -41,12 +70,15 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController, // Set the ScrollController
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final message = _messages[index];
+                // sort messages by timestamp
+                _messages.sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
                 return ListTile(
                   title: Text(message['text']),
-                  subtitle: Text('Sender: ${message['senderId']}'),
+                  subtitle: Text('Sender: ${message['sender']}'),
                 );
               },
             ),
@@ -76,12 +108,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _sendMessage() async {
     if (_messageController.text.isNotEmpty) {
       await _chatRef.child('chatRooms/${widget.channelId}/messages').push().set({
-        'senderId': 'user123', // Replace with actual user ID
+        'sender': _userName,
         'text': _messageController.text,
         'timestamp': DateTime.now().toIso8601String(),
       });
       _messageController.clear();
+      _scrollToBottom();
     }
   }
-
 }

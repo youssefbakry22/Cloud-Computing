@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_screen.dart';
+import 'sign_in_screen.dart';
 
 class ChannelScreen extends StatefulWidget {
   @override
@@ -12,7 +14,21 @@ class ChannelScreen extends StatefulWidget {
 class _ChannelScreenState extends State<ChannelScreen> {
   final CollectionReference _channels = FirebaseFirestore.instance.collection('channels');
   final DatabaseReference chatRef = FirebaseDatabase.instance.ref();
-  final String _userId = 'user100';
+  late String _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeUserId();
+  }
+
+  void _initializeUserId() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userId = user.uid;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +39,10 @@ class _ChannelScreenState extends State<ChannelScreen> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: _showAddChannelDialog,
+          ),
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _signOut,
           ),
         ],
       ),
@@ -44,13 +64,11 @@ class _ChannelScreenState extends State<ChannelScreen> {
               }
 
               return ListTile(
-                // add padding at start of ListTile
                 contentPadding: EdgeInsets.only(left: 18),
                 title: Text(channel['name']),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Chat Icon: Visible only if subscribed
                     if (isSubscribed)
                       IconButton(
                         icon: Icon(Icons.chat),
@@ -58,35 +76,35 @@ class _ChannelScreenState extends State<ChannelScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatScreen(channelId: channel.id,
-                                channelName: channel['name'],),
+                              builder: (context) => ChatScreen(
+                                channelId: channel.id,
+                                channelName: channel['name'],
+                              ),
                             ),
                           );
                         },
                       ),
-                    // Subscribe/Unsubscribe Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isSubscribed ? Colors.red : Colors.green,
-                        minimumSize: Size(80, 36), // Adjust size as needed
-                        padding: EdgeInsets.zero,  // Remove padding
+                        minimumSize: Size(80, 36),
+                        padding: EdgeInsets.zero,
                       ),
                       onPressed: () {
                         _subscribeToChannel(channel.id, channel['name'], isSubscribed);
                       },
                       child: Text(
                         isSubscribed ? 'Unsub' : 'Sub',
-                        style: TextStyle(fontSize: 12), // Adjust text size as needed
+                        style: TextStyle(fontSize: 12),
                       ),
                     ),
-                    // Settings Button
                     IconButton(
                       icon: Icon(Icons.more_vert),
                       onPressed: () {
                         _showChannelOptions(channel.id, channel['name']);
                       },
-                      padding: EdgeInsets.zero,  // Remove extra padding
-                      constraints: BoxConstraints(), // Remove constraints to make it tightly packed
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
                     ),
                   ],
                 ),
@@ -113,14 +131,14 @@ class _ChannelScreenState extends State<ChannelScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
                 _createChannel(_channelController.text.trim());
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Create'),
             ),
@@ -142,13 +160,11 @@ class _ChannelScreenState extends State<ChannelScreen> {
   Future<void> _subscribeToChannel(String channelId, String channelName, bool isSubscribed) async {
     DocumentReference channelRef = _channels.doc(channelId);
     if (isSubscribed) {
-      // Unsubscribe
       await channelRef.update({
         'subscribers': FieldValue.arrayRemove([_userId]),
       });
       await FirebaseMessaging.instance.unsubscribeFromTopic(channelName);
     } else {
-      // Subscribe
       await channelRef.update({
         'subscribers': FieldValue.arrayUnion([_userId]),
       });
@@ -167,7 +183,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
               leading: Icon(Icons.edit),
               title: Text('Modify Name'),
               onTap: () {
-                Navigator.pop(context); // Close the menu
+                Navigator.pop(context);
                 _showModifyChannelDialog(channelId, channelName);
               },
             ),
@@ -175,7 +191,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
               leading: Icon(Icons.delete),
               title: Text('Delete'),
               onTap: () {
-                Navigator.pop(context); // Close the menu
+                Navigator.pop(context);
                 _deleteChannel(channelId, channelName);
               },
             ),
@@ -200,7 +216,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
@@ -211,7 +227,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
                     'name': _channelController.text.trim(),
                   });
                 }
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Save'),
             ),
@@ -227,4 +243,11 @@ class _ChannelScreenState extends State<ChannelScreen> {
     await chatRef.child('chatRooms/$channelId').remove();
   }
 
+  void _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInScreen()),
+    );
+  }
 }
