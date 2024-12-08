@@ -19,13 +19,6 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, dynamic>> _messages = [];
   final ScrollController _scrollController = ScrollController(); // Add ScrollController
 
-  void _initializeUserName() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      _userName = user.displayName ?? 'Anonymous'; // Use displayName or a fallback
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -41,7 +34,14 @@ class _ChatScreenState extends State<ChatScreen> {
         _scrollToBottom();
       }
     });
-    _initializeUserName();
+    _getUserName();
+  }
+
+  void _getUserName() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userName = user.displayName ?? 'Anonymous'; // Use displayName or a fallback
+    }
   }
 
   @override

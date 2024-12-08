@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'chat_screen.dart';
+import 'notification_handler.dart';
 import 'sign_in_screen.dart';
 
 class ChannelScreen extends StatefulWidget {
@@ -17,23 +19,32 @@ class _ChannelScreenState extends State<ChannelScreen> {
   late String _userId;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-    _initializeUserId();
+    _initNotifications();
+    _getUserId();
   }
 
-  void _initializeUserId() {
+  Future<void> _initNotifications() async {
+    if (await NotificationHandler.getPermission()) {
+    NotificationHandler.initialize();
+    }
+    NotificationHandler.handleForegroundNotification();
+    NotificationHandler.handleBackgroundNotification();
+  }
+
+  void _getUserId() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       _userId = user.uid;
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Hides the back arrow
         title: Text('Channels'),
         actions: [
           IconButton(
@@ -244,6 +255,14 @@ class _ChannelScreenState extends State<ChannelScreen> {
   }
 
   void _signOut() async {
+    try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut(); // Sign out from Google
+      }
+    } catch (e) {
+      print('Error signing out: $e');
+    }
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,

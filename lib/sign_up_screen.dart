@@ -13,6 +13,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _usernameController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  bool _obscureText = true; // Track password visibility
 
   Future<void> _signUp() async {
     setState(() {
@@ -68,8 +69,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
+              obscureText: _obscureText, // Toggle password visibility
+              decoration: InputDecoration(
+                labelText: 'Password',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off, // Toggle icon
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText; // Toggle visibility
+                    });
+                  },
+                ),
+              ),
             ),
             SizedBox(height: 20),
             _isLoading
