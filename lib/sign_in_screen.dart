@@ -107,34 +107,51 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
 
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PhoneAuthScreen()), // Navigate to PhoneAuthScreen
-                );
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.phone), // Icon for phone
-                  SizedBox(width: 10), // Spacing between icon and text
-                  Text('Phone'),
-                ],
-              ),
+            const Row(
+              children: [
+                Expanded(child: Divider()), // Left line
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text('OR Sign in with'),
+                ),
+                Expanded(child: Divider()), // Right line
+              ],
             ),
 
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => googleAuth(context),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.g_translate), // Icon for Google
-                  SizedBox(width: 10), // Spacing between icon and text
-                  Text('Google'),
-                ],
-              ),
+            Row(
+              // make space between buttons only
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PhoneAuthScreen()), // Navigate to PhoneAuthScreen
+                    );
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.phone), // Icon for phone
+                      SizedBox(width: 10), // Spacing between icon and text
+                      Text('Phone'),
+                    ],
+                  ),
+                ),
+
+                ElevatedButton(
+                  onPressed: () => googleAuth(context),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.g_translate), // Icon for Google
+                      SizedBox(width: 10), // Spacing between icon and text
+                      Text('Google'),
+                    ],
+                  ),
+                ),
+              ],
             ),
 
             TextButton(
